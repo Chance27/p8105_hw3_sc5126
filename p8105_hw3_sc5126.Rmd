@@ -32,69 +32,6 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
-### Problem 1
-
-#### Read in the data
-
-```{r}
-data("instacart")
-
-instacart = 
-  instacart |> 
-  as_tibble()
-```
-
-#### Answer questions about the data
-
-This dataset contains `r nrow(instacart)` rows and `r ncol(instacart)` columns, with each row resprenting a single product from an instacart order. Variables include identifiers for user, order, and product; the order in which each product was added to the cart. There are several order-level variables, describing the day and time of the order, and number of days since prior order. Then there are several item-specific variables, describing the product name (e.g. Yogurt, Avocado), department (e.g. dairy and eggs, produce), and aisle (e.g. yogurt, fresh fruits), and whether the item has been ordered by this user in the past. In total, there are `r instacart |> select(product_id) |> distinct() |> count()` products found in `r instacart |> select(user_id, order_id) |> distinct() |> count()` orders from `r instacart |> select(user_id) |> distinct() |> count()` distinct users.
-
-Below is a table summarizing the number of items ordered from aisle. In total, there are 134 aisles, with fresh vegetables and fresh fruits holding the most items ordered by far.
-
-```{r}
-instacart |> 
-  count(aisle) |> 
-  arrange(desc(n))
-```
-
-Next is a plot that shows the number of items ordered in each aisle. Here, aisles are ordered by ascending number of items.
-
-```{r}
-instacart |> 
-  count(aisle) |> 
-  filter(n > 10000) |> 
-  mutate(aisle = fct_reorder(aisle, n)) |> 
-  ggplot(aes(x = aisle, y = n)) + 
-  geom_point() + 
-  labs(title = "Number of items ordered in each aisle") +
-  theme(axis.text.x = element_text(angle = 60, hjust = 1))
-
-```
-
-Our next table shows the three most popular items in aisles `baking ingredients`, `dog food care`, and `packaged vegetables fruits`, and includes the number of times each item is ordered in your table.
-
-```{r}
-instacart |> 
-  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) |>
-  group_by(aisle) |> 
-  count(product_name) |> 
-  mutate(rank = min_rank(desc(n))) |> 
-  filter(rank < 4) |> 
-  arrange(desc(n)) |>
-  knitr::kable()
-```
-
-Finally is a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week. This table has been formatted in an untidy manner for human readers. Pink Lady Apples are generally purchased slightly earlier in the day than Coffee Ice Cream, with the exception of day 5.
-
-```{r}
-instacart |>
-  filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) |>
-  group_by(product_name, order_dow) |>
-  summarize(mean_hour = mean(order_hour_of_day)) |>
-  pivot_wider(
-    names_from = order_dow, 
-    values_from = mean_hour) |>
-  knitr::kable(digits = 2)
-```
 
 
 
@@ -334,8 +271,54 @@ In both "High school equivalent" and "More than high school" levels, females gen
 
 
 ```{r 3.4}
-# Accelerometer data allows the inspection activity over the course of the day. Make a three-panel plot that shows the 24-hour activity time courses for each education level and use color to indicate sex. Describe in words any patterns or conclusions you can make based on this graph; including smooth trends may help identify differences.
+# Accelerometer data allows the inspection activity over the course of the day. 
+# Make a three-panel plot that shows the 24-hour activity time courses for each education level and use color to indicate sex. 
+# Describe in words any patterns or conclusions you can make based on this graph; 
+# including smooth trends may help identify differences.
 
+plot_data = 
+  final_data %>% 
+  group_by(time, sex, education) %>% 
+  summarise(
+    activity = sum(mims)
+  )
 
+plot_data %>% 
+  ggplot(aes(x = time, y = activity, color = sex)) +
+  geom_point(alpha = .5) + 
+  geom_smooth(se = FALSE) + 
+  scale_x_continuous(
+    breaks = c(0:24)*3600, 
+    labels = c(0:24)) +
+  facet_grid(~education) +
+  xlab("Time") + 
+  ylab("Activity") +
+  labs(title = "Activity VS Time for men and women in each education category")+
+  theme(legend.position = "bottom", plot.title = element_text(hjust=0.5))
 ```
+
+```{r}
+final_data %>% 
+  ggplot(aes(x = time, y = mims, color = sex)) +
+  geom_point(alpha = .5) + 
+  geom_smooth(se = FALSE) + 
+  scale_x_continuous(
+    breaks = c(0:24)*3600, 
+    labels = c(0:24)) +
+  facet_grid(~education) +
+  xlab("Time") + 
+  ylab("Activity") +
+  labs(title = "Activity VS Time for men and women in each education category")+
+  theme(legend.position = "bottom", plot.title = element_text(hjust=0.5))
+```
+
+**Comment:**
+In all three education levels, the activities mainly lie during the day time for both male and female and reach a relative peak during noon. 
+
+In "less than high school" level, females have lower activity than males in early morning and late night, which becomes the opposite during the day.
+
+
+In "high school equivalent" level, females have lower activity than males in almost all day.
+
+In "more than high school" level, females have higher activity than males in almost all day.
 
