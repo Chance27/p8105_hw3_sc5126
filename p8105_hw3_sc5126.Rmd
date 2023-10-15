@@ -288,7 +288,7 @@ plot_data %>%
   geom_point(alpha = .5) + 
   geom_smooth(se = FALSE) + 
   scale_x_continuous(
-    breaks = c(0:24)*3600, 
+    breaks = c(0:24)*60, 
     labels = c(0:24)) +
   facet_grid(~education) +
   xlab("Time") + 
@@ -303,7 +303,7 @@ final_data %>%
   geom_point(alpha = .5) + 
   geom_smooth(se = FALSE) + 
   scale_x_continuous(
-    breaks = c(0:24)*3600, 
+    breaks = c(0:24)*60, 
     labels = c(0:24)) +
   facet_grid(~education) +
   xlab("Time") + 
@@ -315,7 +315,7 @@ final_data %>%
 **Comment:**
 In all three education levels, the activities mainly lie during the day time for both male and female and reach a relative peak during noon. 
 
-In "less than high school" level, females have lower activity than males in early morning and late night, which becomes the opposite during the day.
+In "less than high school" level, females have lower activity than males in early morning (before 8 am) and late night (after 10 pm), which becomes the opposite during the day.
 
 
 In "high school equivalent" level, females have lower activity than males in almost all day.
