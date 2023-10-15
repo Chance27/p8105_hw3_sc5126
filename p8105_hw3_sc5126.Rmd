@@ -122,16 +122,64 @@ smart %>%
   filter(year == 2002) %>% 
   select(locationabbr, locationdesc) %>% 
   group_by(locationabbr) %>% 
-  distinct(locationdesc) %>% 
-  count(locationdesc) %>% 
-  arrange(desc(n))
+  summarise(
+    n_loc = n_distinct(locationdesc)
+  ) %>% 
+  filter(n_loc >= 7) 
 
 # What about in 2010?
+smart %>% 
+  filter(year == 2010) %>% 
+  select(locationabbr, locationdesc) %>% 
+  group_by(locationabbr) %>% 
+  summarise(
+    n_loc = n_distinct(locationdesc)
+  ) %>% 
+  filter(n_loc >= 7)
 ```
+
+In 2002, CT, FL, MA, NC, NJ, PA were observed at 7 or more locations.
+In 2010, CA, CO, FL, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX, WA were observed at 7 or more locations.
 
 
 ```{r prob2.2.2}
-# Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
+# Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. 
+#Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
+
+smart_exe_avg = 
+  smart %>% 
+  filter(response == "Excellent") %>% 
+  group_by(locationabbr, year) %>% 
+  mutate(
+    avg_data_value = mean(data_value, na.rm = TRUE)
+  ) %>% 
+  select(
+    locationabbr,
+    year,
+    avg_data_value
+  )
+
+smart_exe = 
+  smart %>% 
+  filter(response == "Excellent") %>% 
+  inner_join(smart_exe_avg, by = c("locationabbr", "year")) %>% 
+  select(
+    locationabbr, year, avg_data_value, response
+  ) %>% 
+  distinct()
+```
+
+
+```{r plot}
+
+smart_exe %>% 
+  ggplot(aes(x = year, y = avg_data_value, color = locationabbr)) + 
+  geom_line() +
+  labs(xlab("Year"), 
+       ylab("Average Data Value"), 
+       color = "State")+
+  ggtitle("Average data value over time within a state")+
+  theme(legend.position = "bottom", plot.title = element_text(hjust=0.5))
 
 ```
 
@@ -139,7 +187,8 @@ smart %>%
 
 ```{r prob2.2.3}
 # Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State
-
+smart %>% 
+  filter(year == 2006 & year == 2010)
 
 ```
 
@@ -181,7 +230,8 @@ mims_data =
   pivot_longer(
     min1:min1440,
     names_to = "time",
-    values_to = "mims"
+    values_to = "mims",
+    names_prefix = "min"
   )
 
 acce_data = 
@@ -189,7 +239,7 @@ acce_data =
   filter(age >= 21) %>% 
   mutate(
     sex = as.factor(sex),
-    time = as.factor(time)
+    time = as.numeric(time)
   )
   
 ```
